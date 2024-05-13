@@ -32,13 +32,15 @@ const API_KEY = "live_8QHVOhg8hdtBQP6wL2sI4ui22M7E17OYTnaIjpRUVYNwXjMdLM2L153N24
  * This function should execute immediately.
  */
 
-
+/**
+ * fetch version
+ */
 async function initialLoad() {
     await fetch("https://api.thecatapi.com/v1/breeds")
         .then(x => x.json())
         .then((res) => {
 
-            console.log(res); // List of cat objects
+            // console.log(res); // List of cat objects
             // console.log(res[0].name); // Outputs the first cat object's id
             for (let i = 0; i < res.length; i++) {
                 let breed = document.createElement("option");
@@ -58,7 +60,9 @@ async function initialLoad() {
             console.log(err);
         })
 }
-initialLoad();
+
+
+
 
 /**
  * 2. Create an event handler for breedSelect that does the following:
@@ -73,6 +77,10 @@ initialLoad();
  *  - Remember that functionality comes first, but user experience and design are important.
  * - Each new selection should clear, re-populate, and restart the Carousel.
  * - Add a call to this function to the end of your initialLoad function above to create the initial carousel.
+ */
+
+/**
+ * fetch version
  */
 
 function displayBreedInfo(evt) {
