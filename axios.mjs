@@ -127,14 +127,16 @@ async function displayBreedInfo(){
  */
 axios.interceptors.request.use((request) => {
     console.log("Request Began.");
-    request.startTime = new Date().getTime();
+    request.metadata = { startTime: new Date().getTime()}
+    return request;
 })
 
 axios.interceptors.response.use((response) => {
-    response.endTime = new Date().getTime();
-    response.durationInMS = response.endTime - response.startTime;
+    response.config.metadata.endTime = new Date().getTime();
+    response.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
 
     console.log(`Request duration: ${response.durationInMS}ms`)
+    return response;
 })
 
 /**
