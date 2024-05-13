@@ -72,9 +72,15 @@ breedSelect.addEventListener("change", displayBreedInfo);
 
 async function displayBreedInfo(){
     const val = breedSelect.value; // id of chosen breed
+    console.log(val);
 
-    const results = await axios("https://api.thecatapi.com/v1/breeds");
-    const breedData = await results.data;
+    const breeds = await axios("https://api.thecatapi.com/v1/breeds");
+    const breedData = await breeds.data;
+    const imgURL = `https://api.thecatapi.com/v1/images/search?limit=25&breed_ids=${val}`;
+
+    const results = await axios(imgURL, {
+        onDownloadProgress: updateProgress
+    });
 
     infoDump.innerHTML = ""; // Clears the info dump area before entering new information on different selected breed
 
@@ -128,6 +134,9 @@ async function displayBreedInfo(){
 axios.interceptors.request.use((request) => {
     console.log("Request Began.");
     request.metadata = { startTime: new Date().getTime()}
+
+    progressBar.style.width = "0%";
+
     return request;
 })
 
@@ -154,6 +163,14 @@ axios.interceptors.response.use((response) => {
  *   once or twice per request to this API. This is still a concept worth familiarizing yourself
  *   with for future projects.
  */
+function updateProgress(event){
+    const total = event.total;
+    const loaded = event.loaded;
+    const percent = Math.round((loaded / total) * 100);
+
+    progressBar.style.transition = "width ease 2s";
+    progressBar.style.width = percent + "%";
+}
 
 /**
  * 7. As a final element of progress indication, add the following to your axios interceptors:
