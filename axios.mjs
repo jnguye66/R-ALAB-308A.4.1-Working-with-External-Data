@@ -11,7 +11,7 @@ const progressBar = document.getElementById("progressBar");
 const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 
 // Step 0: Store your API key here for reference and easy access.
-const API_KEY = "live_8QHVOhg8hdtBQP6wL2sI4ui22M7E17OYTnaIjpRUVYNwXjMdLM2L153N24ciNZtF";
+const API_KEY = "live_8QHVOhg8hdtBQP6wL2sI4ui22M7E17OYTnaIjpRUVYNwXjMdLM2L153N24ciNZtFs";
 
 // fetch("https://api.thecatapi.com/v1/images/search")
 //     .then((x) => {
@@ -36,11 +36,11 @@ const API_KEY = "live_8QHVOhg8hdtBQP6wL2sI4ui22M7E17OYTnaIjpRUVYNwXjMdLM2L153N24
 /**
  * axios version of initialLoad()
  */
-async function initialLoad(){
+async function initialLoad() {
     const results = await axios("https://api.thecatapi.com/v1/breeds");
     const breed = await results.data;
 
-    for (let i = 0; i < breed.length; i++){
+    for (let i = 0; i < breed.length; i++) {
         let option = document.createElement("option");
         option.value = breed[i].id;
         option.textContent = breed[i].name;
@@ -70,47 +70,64 @@ initialLoad();
  */
 breedSelect.addEventListener("change", displayBreedInfo);
 
-async function displayBreedInfo(){
+async function displayBreedInfo() {
+    Carousel.clear();
     const val = breedSelect.value; // id of chosen breed
     console.log(val);
 
     const breeds = await axios("https://api.thecatapi.com/v1/breeds");
     const breedData = await breeds.data;
-    const imgURL = `https://api.thecatapi.com/v1/images/search?limit=25&breed_ids=${val}`;
+    const imgURL = `https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=${val}`;
+    // console.log(imgURL);
 
     const results = await axios(imgURL, {
         onDownloadProgress: updateProgress
     });
+
+    let resultData = results.data;
+
+    resultData.forEach((image) => {
+        let carouselItem = Carousel.createCarouselItem(
+            image.url, // image source
+            breedSelect.value, // image alt
+            image.id // id
+        );
+        Carousel.appendCarousel(carouselItem);
+    })
 
     infoDump.innerHTML = ""; // Clears the info dump area before entering new information on different selected breed
 
     let breedInfoList = document.createElement("ul"); // List of breed information
     breedInfoList.style.listStyle = "none";
 
-            for (let i = 0; i < breedData.length; i++) {
-                let breedDesc = document.createElement("li");
-                breedDesc.style.marginBottom = "5px";
-                let breedOrigin = document.createElement("li");
-                breedOrigin.style.marginBottom = "5px";
-                let breedTemper = document.createElement("li");
-                breedTemper.style.marginBottom = "5px";
-                let breedWikiPage = document.createElement("li");
-                breedWikiPage.style.marginBottom = "5px";
+    for (let i = 0; i < breedData.length; i++) {
+        let breedDesc = document.createElement("li");
+        breedDesc.style.marginBottom = "5px";
+        let breedOrigin = document.createElement("li");
+        breedOrigin.style.marginBottom = "5px";
+        let breedTemper = document.createElement("li");
+        breedTemper.style.marginBottom = "5px";
+        let breedWikiPage = document.createElement("li");
+        breedWikiPage.style.marginBottom = "5px";
 
-                if (val === breedData[i].id) {
-                    breedDesc.textContent = `Axios Description: ${breedData[i].description}`;
-                    breedOrigin.textContent = `Axios Origin: ${breedData[i].origin}`;
-                    breedTemper.textContent = `Axios Temperament: ${breedData[i].temperament}`;
-                    breedWikiPage.textContent = `Axios Wikipedia Page:  ${breedData[i].wikipedia_url}`;
-                    
+        if (val === breedData[i].id) {
+            breedDesc.textContent = `Description: ${breedData[i].description}`;
+            breedOrigin.textContent = `Axios Origin: ${breedData[i].origin}`;
+            breedTemper.textContent = `Axios Temperament: ${breedData[i].temperament}`;
+            breedWikiPage.textContent = `Axios Wikipedia Page:  ${breedData[i].wikipedia_url}`;
 
-                    breedInfoList.appendChild(breedDesc);
-                    breedInfoList.appendChild(breedOrigin);
-                    breedInfoList.appendChild(breedTemper);
-                    breedInfoList.appendChild(breedWikiPage);
-                }
-            }
-            infoDump.appendChild(breedInfoList);
+
+            breedInfoList.appendChild(breedDesc);
+            breedInfoList.appendChild(breedOrigin);
+            breedInfoList.appendChild(breedTemper);
+            breedInfoList.appendChild(breedWikiPage);
+        }
+        
+    }
+    
+    infoDump.appendChild(breedInfoList);
+
+    Carousel.start();
 }
 
 /**
@@ -133,7 +150,7 @@ async function displayBreedInfo(){
  */
 axios.interceptors.request.use((request) => {
     console.log("Request Began.");
-    request.metadata = { startTime: new Date().getTime()} // request start time
+    request.metadata = { startTime: new Date().getTime() } // request start time
 
     progressBar.style.width = "0%";
 
@@ -144,9 +161,9 @@ axios.interceptors.request.use((request) => {
 
 axios.interceptors.response.use((response) => {
     response.config.metadata.endTime = new Date().getTime(); // response end time
-    response.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
+    response.config.metadata.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
 
-    console.log(`Request duration: ${response.durationInMS}ms`);
+    console.log(`Request duration: ${response.config.metadata.durationInMS}ms`);
 
     document.body.style.cursor = "default";
 
@@ -168,7 +185,7 @@ axios.interceptors.response.use((response) => {
  *   once or twice per request to this API. This is still a concept worth familiarizing yourself
  *   with for future projects.
  */
-function updateProgress(event){
+function updateProgress(event) {
     const total = event.total;
     const loaded = event.loaded;
     const percent = Math.round((loaded / total) * 100);
@@ -198,8 +215,12 @@ export async function favourite(imgId) {
 
     // console.log(favorites);
 
-    if (favorites.data[0]){
-        await axios.delete(`https://api.thecatapi.com/v1/favourites/${isFavorite.data[0].id}`)
+    if (favorites.data[0]) {
+        await axios.delete(`https://api.thecatapi.com/v1/favourites/${favorites.data[0].id}`);
+    } else {
+        await axios.post(`https://api.thecatapi.com/v1/favourites/`, {
+            image_id: imgId
+        });
     }
 }
 
@@ -212,6 +233,15 @@ export async function favourite(imgId) {
  *    If that isn't in its own function, maybe it should be so you don't have to
  *    repeat yourself in this section.
  */
+
+getFavouritesBtn.addEventListener("click", getFavourites);
+
+async function getFavourites() {
+    const favorites = await axios(`https://api.thecatapi.com/v1/favourites`); // Get favorites from API
+    const favoritesData = await favorites.data;
+
+    console.log(favoritesData);
+}
 
 /**
  * 10. Test your site, thoroughly!
