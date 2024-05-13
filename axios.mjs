@@ -133,18 +133,23 @@ async function displayBreedInfo(){
  */
 axios.interceptors.request.use((request) => {
     console.log("Request Began.");
-    request.metadata = { startTime: new Date().getTime()}
+    request.metadata = { startTime: new Date().getTime()} // request start time
 
     progressBar.style.width = "0%";
+
+    document.body.style.setProperty("cursor", "wait");
 
     return request;
 })
 
 axios.interceptors.response.use((response) => {
-    response.config.metadata.endTime = new Date().getTime();
+    response.config.metadata.endTime = new Date().getTime(); // response end time
     response.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
 
-    console.log(`Request duration: ${response.durationInMS}ms`)
+    console.log(`Request duration: ${response.durationInMS}ms`);
+
+    document.body.style.cursor = "default";
+
     return response;
 })
 
