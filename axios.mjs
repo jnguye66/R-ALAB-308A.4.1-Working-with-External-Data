@@ -194,7 +194,13 @@ function updateProgress(event){
  * - You can call this function by clicking on the heart at the top right of any image.
  */
 export async function favourite(imgId) {
-    // your code here
+    const favorites = await axios(`https://api.thecatapi.com/v1/favourites?image_id=${imgId}`); // Accessing API's favorites
+
+    // console.log(favorites);
+
+    if (favorites.data[0]){
+        await axios.delete(`https://api.thecatapi.com/v1/favourites/${isFavorite.data[0].id}`)
+    }
 }
 
 /**
