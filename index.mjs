@@ -35,25 +35,28 @@ const API_KEY = "live_8QHVOhg8hdtBQP6wL2sI4ui22M7E17OYTnaIjpRUVYNwXjMdLM2L153N24
 
 async function initialLoad() {
     await fetch("https://api.thecatapi.com/v1/breeds")
-    .then(x => x.json())
-    .then((res) => {
-        
-        // console.log(res); // List of cat objects
-        // console.log(res[0].name); // Outputs the first cat object's id
-        for(let i = 0; i < res.length; i++){
-            let breed = document.createElement("option");
-            breed.value = res[i].id;
-            breed.innerHTML = res[i].name;
+        .then(x => x.json())
+        .then((res) => {
 
-            // console.log(breed.value);
-            // console.log(breed.innerHTML);
-            breedSelect.appendChild(breed);
-            // console.log(breed);
-        }
-    })
-    .catch((err) => {
-        console.log(err);
-    })
+            console.log(res); // List of cat objects
+            // console.log(res[0].name); // Outputs the first cat object's id
+            for (let i = 0; i < res.length; i++) {
+                let breed = document.createElement("option");
+                breed.value = res[i].id;
+                breed.innerHTML = res[i].name;
+                // breed.description = res[i].description;
+
+                // console.log(breed.value);
+                // console.log(breed.innerHTML);
+                // console.log(breed.description);
+                breedSelect.appendChild(breed);
+                // console.log(breed);
+            }
+            breedSelect.addEventListener("change", displayBreedInfo);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
 }
 initialLoad();
 
@@ -71,8 +74,48 @@ initialLoad();
  * - Each new selection should clear, re-populate, and restart the Carousel.
  * - Add a call to this function to the end of your initialLoad function above to create the initial carousel.
  */
-breedSelect.addEventListener("click", ){
 
+function displayBreedInfo(evt) {
+    fetch("https://api.thecatapi.com/v1/breeds")
+        .then(x => x.json())
+        .then((data) => {
+            infoDump.innerHTML = ""; // Clears the info dump area before entering new information on different selected breed
+
+            let breedData = data; // All cat data
+
+            let selected = evt.target.options[evt.target.selectedIndex].textContent; // Selected option in <select>
+
+            let breedInfoList = document.createElement("ul"); // List of breed information
+            breedInfoList.style.listStyle = "none";
+
+            for (let i = 0; i < breedData.length; i++) {
+                let breedDesc = document.createElement("li");
+                breedDesc.style.marginBottom = "5px";
+                let breedOrigin = document.createElement("li");
+                breedOrigin.style.marginBottom = "5px";
+                let breedTemper = document.createElement("li");
+                breedTemper.style.marginBottom = "5px";
+                let breedWikiPage = document.createElement("li");
+                breedWikiPage.style.marginBottom = "5px";
+
+                if (selected === breedData[i].name) {
+                    breedDesc.textContent = `Description: ${breedData[i].description}`;
+                    breedOrigin.textContent = `Origin: ${breedData[i].origin}`;
+                    breedTemper.textContent = `Temperament: ${breedData[i].temperament}`;
+                    breedWikiPage.textContent = `Wikipedia Page:  ${breedData[i].wikipedia_url}`;
+                    
+
+                    breedInfoList.appendChild(breedDesc);
+                    breedInfoList.appendChild(breedOrigin);
+                    breedInfoList.appendChild(breedTemper);
+                    breedInfoList.appendChild(breedWikiPage);
+                }
+            }
+            infoDump.appendChild(breedInfoList);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
 }
 
 /**
